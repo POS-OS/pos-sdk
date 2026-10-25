@@ -16,7 +16,9 @@ package meta, release archives, the toolchain).
 `engine-checkout` setting names (`POS_ENGINE_CHECKOUT`; in
 `~/.config/pos/pos-sdk.conf`, or in `build.conf` beside it), in
 `work/engine`, sparse (`buildsys/`) and checked out at that commit; a
-new pin is fetched from the checkout. `POS_ENGINE` names a pos checkout
+new pin is fetched from the checkout. The clone shares the checkout's
+objects (`git clone --shared`): a pinned commit must stay in the
+checkout, as commits of its main do. `POS_ENGINE` names a pos checkout
 to run as it is instead, for work on the engine. Moving to a newer
 engine is a commit of the `engine` line. A build records the engine's
 commit in its `info`.

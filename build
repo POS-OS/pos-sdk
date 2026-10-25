@@ -2,7 +2,8 @@
 # Build pos-sdk: ./build <command>, with the engine of pos, buildsys/ at
 # the commit the project file pins (BUILD.md "Engine"). The engine is a
 # clone of the pos checkout the engine-checkout setting names, in
-# work/engine, checked out at that commit. POS_ENGINE names a pos
+# work/engine, checked out at that commit; it shares the checkout's
+# objects (git clone --shared) and copies none. POS_ENGINE names a pos
 # checkout to run as it is instead, for work on the engine.
 set -euo pipefail
 
@@ -39,7 +40,7 @@ else
     if [[ ! -d $engine/.git ]]; then
       rm -rf "$engine"
       mkdir -p "$here/work"
-      git clone -q --no-checkout "$checkout" "$engine"
+      git clone -q --shared --no-checkout "$checkout" "$engine"
       git -C "$engine" sparse-checkout set buildsys
     fi
     git -C "$engine" cat-file -e "$pin^{commit}" 2>/dev/null ||
