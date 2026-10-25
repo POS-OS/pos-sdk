@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Build pos-sdk: ./build <command>, with the engine of pos, buildsys/ at
+# the commit the project file pins (BUILD.md "Engine"). The engine is a
+# clone of the pos checkout the engine-checkout setting names, in
+# work/engine, checked out at that commit. POS_ENGINE names a pos
+# checkout to run as it is instead, for work on the engine.
+set -euo pipefail
+
+here=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+
+# The engine-checkout setting: its environment variable, else its line in
+# pos-sdk.conf, else in build.conf (the engine's config.sh).
+engine_checkout() {
+  local conf=${POS_BUILD_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/pos/build.conf} f v=
+  if [[ -n ${POS_ENGINE_CHECKOUT:-} ]]; then
+    echo "$POS_ENGINE_CHECKOUT"
+    return 0
+  fi
+  for f in "$(dirname "$conf")/pos-sdk.conf" "$conf"; do
+    [[ -f $f ]] || continue
+    v=$(sed -e 's/#.*//' "$f" | awk '$1 == "engine-checkout" {v = $2} END {print v}')
+    [[ -z $v ]] || break
+  done
+  echo "$v"
+}
+
+if [[ -n ${POS_ENGINE:-} ]]; then
+  engine=$POS_ENGINE
+else
+  pin=$(awk '$1 == "engine" {print $2}' "$here/project")
+  [[ -n $pin ]] || { echo "$here/project: no engine line" >&2; exit 1; }
+  engine=$here/work/engine
+  if [[ $(git -C "$engine" rev-parse HEAD 2>/dev/null) != "$pin" ]]; then
+    checkout=$(engine_checkout)
+    [[ -n $checkout ]] || {
+      echo "set engine-checkout (POS_ENGINE_CHECKOUT) to a pos checkout, the engine's source" >&2
+      exit 1
+    }
+    if [[ ! -d $engine/.git ]]; then
+      rm -rf "$engine"
+      mkdir -p "$here/work"
+      git clone -q --no-checkout "$checkout" "$engine"
+      git -C "$engine" sparse-checkout set buildsys
+    fi
+    git -C "$engine" cat-file -e "$pin^{commit}" 2>/dev/null ||
+      git -C "$engine" fetch -q "$checkout" '+refs/heads/*:refs/remotes/origin/*'
+    git -C "$engine" cat-file -e "$pin^{commit}" 2>/dev/null || {
+      echo "engine $pin is not in $checkout; fetch it there" >&2
+      exit 1
+    }
+    echo "engine: pos $pin" >&2
+    git -C "$engine" -c advice.detachedHead=false checkout -q --detach "$pin"
+  fi
+fi
+POS_PROJECT=$here exec "$engine/buildsys/build.sh" "$@"

@@ -1,0 +1,7 @@
+# Editor and patch leftovers, anywhere.
+*~
+*.rej
+*.orig
+
+# Builds, references, downloads and the engine (BUILD.md).
+/work
