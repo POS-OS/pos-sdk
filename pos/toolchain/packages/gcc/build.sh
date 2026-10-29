@@ -107,7 +107,10 @@ EOF2
 
   # gcc keeps none of it, at either path (_pkg_finish removes the files at
   # the output's paths), and the linker names of the libraries moved, and
-  # of libgcc_s, are in the sdk prefix, pointing at /pos/lib.
+  # of libgcc_s, are in the sdk prefix, pointing at /pos/lib. They point at
+  # the soname (libstdc++.so.6), not the file (libstdc++.so.6.0.36): the sdk
+  # links against the gcc-runtime of the pos it runs on, whose file may be
+  # another gcc's of the same major (BUILD.md "Run-time coupling").
   (cd "${runtime}${prefix}" && find . ! -type d -print0) |
     while IFS= read -r -d '' f; do
       rm -f "${dest_dir}${sdk_prefix}/${f#./}"
@@ -119,7 +122,10 @@ EOF2
     t=$(readlink "$f")
     [[ -e ${runtime}${prefix}/lib/$t ]] ||
       { echo "gcc: $(basename "$f") points at $t, which is in neither prefix" >&2; exit 1; }
-    ln -sfn "../../lib/$t" "$f"
+    so=$(readelf -d "${runtime}${prefix}/lib/$t" | sed -n 's/.*(SONAME).*\[\(.*\)\]$/\1/p')
+    [[ -n $so && -L ${runtime}${prefix}/lib/$so ]] ||
+      { echo "gcc: $t has no soname link in gcc-runtime (soname '$so')" >&2; exit 1; }
+    ln -sfn "../../lib/$so" "$f"
   done
   # libtool archives: not needed to link against the shared libraries, and
   # Fedora does not ship them.

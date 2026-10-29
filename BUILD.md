@@ -43,3 +43,11 @@ reference itself, by the meta each installed. Both come from the
 reference store (`reference-dir`), shared with pos: `./build reference`
 stores a toolchain build there as the default toolchain reference, the
 one pos builds take.
+
+## Run-time coupling
+gcc builds both the compiler and gcc-runtime (libstdc++, libgcc_s and the
+other run-time libraries), which pos ships in `/pos/lib`. The sdk links
+against the gcc-runtime of the pos it runs on: its linker names
+(`/pos/sdk/lib/libstdc++.so`, ...) point at the sonames in `/pos/lib`
+(`libstdc++.so.6`), not at one gcc's files, so an sdk works on every pos
+whose gcc-runtime has the symbols it needs: one of the same gcc or newer.
