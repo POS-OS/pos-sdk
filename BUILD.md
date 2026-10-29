@@ -27,9 +27,9 @@ The settings are pos's (`build.conf.dist` of the engine): `pos-sdk.conf`
 holds what differs from pos's, as `release-dir`.
 
 ## Trees
-* `pos/toolchain`: the recipes, all of the toolchain pipeline (meta
-  `pipeline toolchain`). gmp, mpfr and mpc of gcc's tree are sources of
-  their own (`gcc-gmp`, `gcc-mpfr`, `mpc`).
+* `pos/toolchain`: the recipes, all of the toolchain pipeline, the
+  project's (`project`: `pipeline toolchain`). gmp, mpfr and mpc of gcc's
+  tree are sources of their own (`gcc-gmp`, `gcc-mpfr`, `mpc`).
 * `pos/build-env`: the host and profile packages, a copy of pos's: the
   Fedora compiler (`gcc-host`) a build without a toolchain reference
   uses, the host tools, and `pos-link`.

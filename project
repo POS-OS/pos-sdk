@@ -2,5 +2,8 @@
 # name: names the project's settings (pos-sdk.conf), tools images and
 # containers, and recipes archive.
 name pos-sdk
+# pipeline: the pipeline of the project's packages and builds, the
+# toolchain's (the engine's BUILD.md "Toolchain").
+pipeline toolchain
 # engine: the pos commit whose buildsys/ ./build runs.
-engine c27501221ca213fd95dd10159b5454da93255f53
+engine 907f0d0d11ec25a7d1d43e833622b3112ff62acd

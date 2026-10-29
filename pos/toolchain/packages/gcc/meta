@@ -7,7 +7,6 @@
 # need its own outputs to run. glibc and linux-headers are pos's: from the
 # pos reference in a toolchain build. gcc, gmp, mpfr and mpc are upstream
 # releases.
-pipeline toolchain
 build-requires gcc pos-link
 requires glibc gcc-runtime binutils linux-headers
 with-sources gcc-gmp gcc-mpfr mpc
