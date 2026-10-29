@@ -125,6 +125,14 @@ EOF2
   # Fedora does not ship them.
   find "${dest_dir}${sdk_prefix}/lib" -maxdepth 1 -name '*.la' -delete
 
+  # ar, nm and ranlib load the plugins in lib/bfd-plugins of their prefix:
+  # with gcc's LTO plugin there, as Fedora links it, they read LTO objects
+  # as gcc-ar, gcc-nm and gcc-ranlib do. binutils ships no bfd-plugins.
+  plugin=$(cd "${dest_dir}${sdk_prefix}" && echo libexec/gcc/*/*/liblto_plugin.so)
+  [[ -f ${dest_dir}${sdk_prefix}/$plugin ]] || { echo "gcc: no LTO plugin: $plugin" >&2; exit 1; }
+  mkdir -p "${dest_dir}${sdk_prefix}/lib/bfd-plugins"
+  ln -s "../../$plugin" "${dest_dir}${sdk_prefix}/lib/bfd-plugins/liblto_plugin.so"
+
   # The compiler's programs must run on glibc alone (see configure above).
   # A configure check that quietly fell back to a shared library would tie
   # the toolchain to a pos build's copy of it.

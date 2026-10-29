@@ -40,6 +40,10 @@ pkg() {
   pkg_compile tooldir="$sdk_prefix"
   pkg_install tooldir="$sdk_prefix"
   # ld's libdep plugin is a shared library only: without them it is an
-  # archive in the directory bfd loads plugins from.
+  # archive in the directory bfd loads plugins from. The directory is gcc's,
+  # for its LTO plugin (pos/toolchain/packages/gcc/build.sh).
   rm -r "${dest_dir}${sdk_prefix}/lib/bfd-plugins"
+  # libtool archives: the static libraries link without them, and Fedora
+  # does not ship them.
+  rm "${dest_dir}${sdk_prefix}"/lib/*.la
 }
