@@ -24,7 +24,7 @@ engine is a commit of the `engine` line. A build records the engine's
 commit in its `info`.
 
 The settings are pos's (`build.conf.dist` of the engine): `pos-sdk.conf`
-holds what differs from pos's, as `release-dir`.
+holds what differs from pos's.
 
 ## Trees
 * `pos/toolchain`: the recipes, all of the toolchain pipeline, the
@@ -43,6 +43,17 @@ reference itself, by the meta each installed. Both come from the
 reference store (`reference-dir`), shared with pos: `./build reference`
 stores a toolchain build there as the default toolchain reference, the
 one pos builds take.
+
+## Releases
+pos-sdk numbers and publishes its toolchain builds as pos does its
+builds, with its own `VERSION` and `main-<BUILD>` tags (the engine's
+BUILD.md "Build numbers", "Releases"): `./build tag`, `./build publish`.
+A release is `<release-dir>/pos-sdk/<release>` in the release library
+shared with pos. It holds the toolchain packages as a reference archive
+(`pos-ref-toolchain-<id>.tar.zst`: their staging trees and debug info),
+the recipes and engine archives and the source archives of a build made
+with `--source-archives`. The package records carry each package's
+version (`version` beside `archive` in the meta).
 
 ## Run-time coupling
 gcc builds both the compiler and gcc-runtime (libstdc++, libgcc_s and the

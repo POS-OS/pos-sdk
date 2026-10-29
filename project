@@ -6,4 +6,4 @@ name pos-sdk
 # toolchain's (the engine's BUILD.md "Toolchain").
 pipeline toolchain
 # engine: the pos commit whose buildsys/ ./build runs.
-engine 907f0d0d11ec25a7d1d43e833622b3112ff62acd
+engine 10986eab517977bdcc50d1434cdaf41161112478
