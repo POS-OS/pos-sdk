@@ -7,3 +7,10 @@
 export CC=${sdk_prefix}/bin/gcc
 export CXX=${sdk_prefix}/bin/g++
 export LD=${sdk_prefix}/bin/ld
+# The archive tools are binutils' too, which writes archives with zero
+# dates (--enable-deterministic-archives); the build container's write the
+# time, and gcc's executable_checksum, an md5 over its own archives, then
+# differs between builds.
+export AR=${sdk_prefix}/bin/ar
+export RANLIB=${sdk_prefix}/bin/ranlib
+export NM=${sdk_prefix}/bin/nm
