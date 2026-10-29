@@ -3,4 +3,4 @@
 # containers, and recipes archive.
 name pos-sdk
 # engine: the pos commit whose buildsys/ ./build runs.
-engine 9b5cff0346b7989aeced97c2f3772ba3059ecdef
+engine 493b0cf2fe63a1f07f026ee26a3bc60c30b00fec

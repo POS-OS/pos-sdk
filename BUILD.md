@@ -6,8 +6,8 @@ checkout; pos's BUILD.md describes the engine (builds, references,
 package meta, release archives, the toolchain).
 
     $ echo "engine-checkout /path/to/pos" >>~/.config/pos/pos-sdk.conf
-    $ ./build plan --new --toolchain    # what a toolchain build builds
-    $ ./build run --new --toolchain     # build the toolchain
+    $ ./build plan --new                # what a toolchain build builds
+    $ ./build run --new                 # build the toolchain
     $ ./build reference                 # store it as the default toolchain reference
 
 ## Engine
