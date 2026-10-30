@@ -1,7 +1,12 @@
 # Building
 pos-sdk builds the POS toolchain: binutils, and gcc with gmp, mpfr and
 mpc in its tree, from their upstream release archives, installed in
-`/pos/sdk`. It is built by the engine of POS, `buildsys/` of a pos
+`/apps/pos-sdk/<version>` (`prefix` in `project`; `<version>` is
+`<product version>.<revision>` of `VERSION`, 1.0.0): the sdk is the
+whole prefix, its own `bin`, `lib`, `libexec`, `include` and `share`.
+gcc-runtime installs in `/pos` (its meta's `prefix`), as pos ships it.
+The sdk goes on a machine's `PATH` when it is installed there, not
+through pos. It is built by the engine of POS, `buildsys/` of a pos
 checkout; pos's BUILD.md describes the engine (builds, references,
 package meta, release archives, the toolchain).
 
@@ -59,6 +64,6 @@ version (`version` beside `archive` in the meta).
 gcc builds both the compiler and gcc-runtime (libstdc++, libgcc_s and the
 other run-time libraries), which pos ships in `/pos/lib`. The sdk links
 against the gcc-runtime of the pos it runs on: its linker names
-(`/pos/sdk/lib/libstdc++.so`, ...) point at the sonames in `/pos/lib`
+(`<sdk>/lib/libstdc++.so`, ...) point at the sonames in `/pos/lib`
 (`libstdc++.so.6`), not at one gcc's files, so an sdk works on every pos
 whose gcc-runtime has the symbols it needs: one of the same gcc or newer.

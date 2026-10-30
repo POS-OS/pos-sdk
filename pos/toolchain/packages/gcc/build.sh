@@ -43,9 +43,10 @@ EOF2
   # What the compiler runs on is glibc only: gmp, mpfr and mpc from the tree,
   # gcc's bundled zlib, no zstd (LTO streams are zlib-compressed), and
   # libstdc++ and libgcc linked statically.
-  # The compiler is in the sdk prefix and targets pos: its headers and
-  # libraries are /pos/include and /pos/lib, libgcc_s goes to /pos/lib
-  # (--with-slibdir), and the loader is /pos/lib's (linux64.h above).
+  # The compiler is in the sdk prefix (the project's,
+  # /apps/pos-sdk/<version>) and targets pos: its headers and libraries are
+  # /pos/include and /pos/lib, libgcc_s goes to /pos/lib (--with-slibdir),
+  # and the loader is /pos/lib's (linux64.h above).
   # --with-as/--with-ld bake the POS binutils paths into the driver.
   # --without-isl pins the Graphite check so a change to the tools image
   # cannot change the result. libcc1 installs into the building compiler's
@@ -54,9 +55,9 @@ EOF2
   mkdir build
   cd build
   pkg_autotools ../configure \
-    --prefix="$sdk_prefix" \
-    --libdir="${sdk_prefix}/lib" \
-    --libexecdir="${sdk_prefix}/libexec" \
+    --prefix="$prefix" \
+    --libdir="${prefix}/lib" \
+    --libexecdir="${prefix}/libexec" \
     --with-slibdir=/pos/lib \
     --with-local-prefix=/pos \
     --with-native-system-header-dir=/pos/include \
@@ -72,20 +73,21 @@ EOF2
     --disable-libcc1 \
     --with-static-standard-libraries \
     --without-zstd \
-    --with-as="${sdk_prefix}/bin/as" \
-    --with-ld="${sdk_prefix}/bin/ld" \
+    --with-as="${prefix}/bin/as" \
+    --with-ld="${prefix}/bin/ld" \
     --without-isl
 
   # gcc-runtime: libgcc_s, libstdc++, libatomic and libgomp, split as Fedora
   # splits them, and the target libraries Fedora packages on their own, as
   # Arch's gcc-libs has them: the sanitizers (asan, hwasan, lsan, tsan,
-  # ubsan), libitm, libquadmath and libssp. The loader does not search
-  # /pos/sdk/lib, so a program built with them runs only where they are in
+  # ubsan), libitm, libquadmath and libssp. The loader does not search the
+  # sdk's lib, so a program built with them runs only where they are in
   # /pos/lib. The output keeps what programs load at run time (lib*.so.N)
-  # and the libstdc++ gdb pretty-printers, in /pos: they are pos's, not the
-  # sdk's. Everything used only when compiling or linking stays with gcc,
-  # in the sdk prefix: headers, the compiler's own directory (lib/gcc: crt
-  # files, libgcc.a, unwind.h, omp.h), static libraries, the unversioned
+  # and the libstdc++ gdb pretty-printers, in /pos (its meta's prefix):
+  # they are pos's, not the sdk's. Everything used only when compiling or
+  # linking stays with gcc, in the sdk prefix: headers, the compiler's own
+  # directory (lib/gcc: crt files, libgcc.a, unwind.h, omp.h), static
+  # libraries, the unversioned
   # lib*.so names the linker looks up, the .spec files, the sanitizers'
   # preinit objects and libstdc++.modules.json.
   runtime=$(pkg_output gcc-runtime)
@@ -93,56 +95,58 @@ EOF2
        install-target-libstdc++-v3 install-target-libgomp \
        install-target-libsanitizer install-target-libitm \
        install-target-libquadmath install-target-libssp
-  rm -rf "${runtime}${sdk_prefix}/include" "${runtime}${sdk_prefix}/lib/gcc"
-  find "${runtime}${sdk_prefix}/lib" "${runtime}${prefix}/lib" -maxdepth 1 ! -type d ! -name 'lib*.so.*' -delete
-  mv "${runtime}${sdk_prefix}"/lib/lib*.so.* "${runtime}${prefix}/lib/"
-  mkdir -p "${runtime}${prefix}/share"
-  cp -a "${runtime}${sdk_prefix}/share/." "${runtime}${prefix}/share/"
-  rm -rf "${runtime}${sdk_prefix}"
+  rm -rf "${runtime}${prefix}/include" "${runtime}${prefix}/lib/gcc"
+  find "${runtime}${prefix}/lib" "${runtime}${pos_prefix}/lib" -maxdepth 1 ! -type d ! -name 'lib*.so.*' -delete
+  mv "${runtime}${prefix}"/lib/lib*.so.* "${runtime}${pos_prefix}/lib/"
+  mkdir -p "${runtime}${pos_prefix}/share"
+  cp -a "${runtime}${prefix}/share/." "${runtime}${pos_prefix}/share/"
+  rm -rf "${runtime}${prefix}"
+  find "$runtime" -mindepth 1 -depth -type d -empty -delete
   # The pretty-printers' loader finds them from the paths it was installed
   # with.
-  sed -i "s|'${sdk_prefix}/|'${prefix}/|" "${runtime}${prefix}"/lib/libstdc++.so.*-gdb.py
-  grep -q "^pythondir = '${prefix}/share/" "${runtime}${prefix}"/lib/libstdc++.so.*-gdb.py ||
-    { echo "gcc: libstdc++ gdb script not moved to ${prefix}" >&2; exit 1; }
+  sed -i "s|'${prefix}/|'${pos_prefix}/|" "${runtime}${pos_prefix}"/lib/libstdc++.so.*-gdb.py
+  grep -q "^pythondir = '${pos_prefix}/share/" "${runtime}${pos_prefix}"/lib/libstdc++.so.*-gdb.py ||
+    { echo "gcc: libstdc++ gdb script not moved to ${pos_prefix}" >&2; exit 1; }
 
   # gcc keeps none of it, at either path (_pkg_finish removes the files at
   # the output's paths), and the linker names of the libraries moved, and
-  # of libgcc_s, are in the sdk prefix, pointing at /pos/lib. They point at
+  # of libgcc_s, are in the sdk prefix, pointing at /pos/lib by absolute
+  # path, as the sdk is in a prefix of its own. They point at
   # the soname (libstdc++.so.6), not the file (libstdc++.so.6.0.36): the sdk
   # links against the gcc-runtime of the pos it runs on, whose file may be
   # another gcc's of the same major (BUILD.md "Run-time coupling").
-  (cd "${runtime}${prefix}" && find . ! -type d -print0) |
+  (cd "${runtime}${pos_prefix}" && find . ! -type d -print0) |
     while IFS= read -r -d '' f; do
-      rm -f "${dest_dir}${sdk_prefix}/${f#./}"
+      rm -f "${dest_dir}${prefix}/${f#./}"
     done
-  mv "${dest_dir}${prefix}"/lib/libgcc_s.so "${dest_dir}${prefix}"/lib/libgcc_s_asneeded.so \
-     "${dest_dir}${sdk_prefix}/lib/"
-  for f in "${dest_dir}${sdk_prefix}"/lib/lib*.so; do
+  mv "${dest_dir}${pos_prefix}"/lib/libgcc_s.so "${dest_dir}${pos_prefix}"/lib/libgcc_s_asneeded.so \
+     "${dest_dir}${prefix}/lib/"
+  for f in "${dest_dir}${prefix}"/lib/lib*.so; do
     [[ -L $f && ! -e $f ]] || continue
     t=$(readlink "$f")
-    [[ -e ${runtime}${prefix}/lib/$t ]] ||
+    [[ -e ${runtime}${pos_prefix}/lib/$t ]] ||
       { echo "gcc: $(basename "$f") points at $t, which is in neither prefix" >&2; exit 1; }
-    so=$(readelf -d "${runtime}${prefix}/lib/$t" | sed -n 's/.*(SONAME).*\[\(.*\)\]$/\1/p')
-    [[ -n $so && -L ${runtime}${prefix}/lib/$so ]] ||
+    so=$(readelf -d "${runtime}${pos_prefix}/lib/$t" | sed -n 's/.*(SONAME).*\[\(.*\)\]$/\1/p')
+    [[ -n $so && -L ${runtime}${pos_prefix}/lib/$so ]] ||
       { echo "gcc: $t has no soname link in gcc-runtime (soname '$so')" >&2; exit 1; }
-    ln -sfn "../../lib/$so" "$f"
+    ln -sfn "${pos_prefix}/lib/$so" "$f"
   done
   # libtool archives: not needed to link against the shared libraries, and
   # Fedora does not ship them.
-  find "${dest_dir}${sdk_prefix}/lib" -maxdepth 1 -name '*.la' -delete
+  find "${dest_dir}${prefix}/lib" -maxdepth 1 -name '*.la' -delete
 
   # ar, nm and ranlib load the plugins in lib/bfd-plugins of their prefix:
   # with gcc's LTO plugin there, as Fedora links it, they read LTO objects
   # as gcc-ar, gcc-nm and gcc-ranlib do. binutils ships no bfd-plugins.
-  plugin=$(cd "${dest_dir}${sdk_prefix}" && echo libexec/gcc/*/*/liblto_plugin.so)
-  [[ -f ${dest_dir}${sdk_prefix}/$plugin ]] || { echo "gcc: no LTO plugin: $plugin" >&2; exit 1; }
-  mkdir -p "${dest_dir}${sdk_prefix}/lib/bfd-plugins"
-  ln -s "../../$plugin" "${dest_dir}${sdk_prefix}/lib/bfd-plugins/liblto_plugin.so"
+  plugin=$(cd "${dest_dir}${prefix}" && echo libexec/gcc/*/*/liblto_plugin.so)
+  [[ -f ${dest_dir}${prefix}/$plugin ]] || { echo "gcc: no LTO plugin: $plugin" >&2; exit 1; }
+  mkdir -p "${dest_dir}${prefix}/lib/bfd-plugins"
+  ln -s "../../$plugin" "${dest_dir}${prefix}/lib/bfd-plugins/liblto_plugin.so"
 
   # The compiler's programs must run on glibc alone (see configure above).
   # A configure check that quietly fell back to a shared library would tie
   # the toolchain to a pos build's copy of it.
-  bad=$(find "${dest_dir}${sdk_prefix}/bin" "${dest_dir}${sdk_prefix}/libexec/gcc" -type f -perm -u+x \
+  bad=$(find "${dest_dir}${prefix}/bin" "${dest_dir}${prefix}/libexec/gcc" -type f -perm -u+x \
           -exec readelf -d {} + 2>/dev/null |
         awk '/NEEDED/ {print $NF}' | tr -d '[]' | sort -u |
         grep -v -E '^(libc|libm|ld-linux-x86-64)\.so' || true)

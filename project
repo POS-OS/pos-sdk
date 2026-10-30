@@ -5,5 +5,9 @@ name pos-sdk
 # pipeline: the pipeline of the project's packages and builds, the
 # toolchain's (the engine's BUILD.md "Toolchain").
 pipeline toolchain
+# prefix: where the packages install; <version> is <product
+# version>.<revision> of VERSION. The sdk is the whole prefix; gcc-runtime
+# installs in /pos (its meta).
+prefix /apps/pos-sdk/<version>
 # engine: the pos commit whose buildsys/ ./build runs.
-engine f85b2180bdf07ee5d9377784c7b34d32aa03db91
+engine fedca2a5d2c942adc940c768adf5e4293331e545

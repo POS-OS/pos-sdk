@@ -14,9 +14,9 @@ pkg() {
   # ranlib write archive members with zero dates and owners and mode 0644
   # (their D option): two builds of a package then give the same archives.
   pkg_configure "${src_dir}/configure" \
-    --prefix="$sdk_prefix" \
-    --libdir="${sdk_prefix}/lib" \
-    --with-lib-path="${prefix}/lib" \
+    --prefix="$prefix" \
+    --libdir="${prefix}/lib" \
+    --with-lib-path="${pos_prefix}/lib" \
     --disable-shared \
     --enable-ld=default \
     --enable-plugins \
@@ -32,18 +32,18 @@ pkg() {
     --disable-nls
   # tooldir is where binutils puts the tools for a compiler of the target
   # (<prefix>/<target>/bin, hard links of the bin directory's) and ld's
-  # reference linker scripts. The POS compiler is given /pos/sdk/bin/as and
+  # reference linker scripts. The POS compiler is given <sdk>/bin/as and
   # ld (pos/toolchain/packages/gcc/build.sh), and ld has its default scripts
   # built in: with tooldir the sdk prefix itself, there is no
-  # /pos/sdk/x86_64-pc-linux-gnu, and the scripts are in
-  # /pos/sdk/lib/ldscripts.
-  pkg_compile tooldir="$sdk_prefix"
-  pkg_install tooldir="$sdk_prefix"
+  # <sdk>/x86_64-pc-linux-gnu, and the scripts are in
+  # <sdk>/lib/ldscripts.
+  pkg_compile tooldir="$prefix"
+  pkg_install tooldir="$prefix"
   # ld's libdep plugin is a shared library only: without them it is an
   # archive in the directory bfd loads plugins from. The directory is gcc's,
   # for its LTO plugin (pos/toolchain/packages/gcc/build.sh).
-  rm -r "${dest_dir}${sdk_prefix}/lib/bfd-plugins"
+  rm -r "${dest_dir}${prefix}/lib/bfd-plugins"
   # libtool archives: the static libraries link without them, and Fedora
   # does not ship them.
-  rm "${dest_dir}${sdk_prefix}"/lib/*.la
+  rm "${dest_dir}${prefix}"/lib/*.la
 }

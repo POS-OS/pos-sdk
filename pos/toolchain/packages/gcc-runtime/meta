@@ -5,3 +5,6 @@
 kind output
 output-of gcc
 requires glibc
+# In pos's prefix, not the project's: pos ships it (the engine's BUILD.md
+# "Prefix").
+prefix /pos
