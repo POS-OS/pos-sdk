@@ -9,5 +9,10 @@ pipeline toolchain
 # version>.<revision> of VERSION. The sdk is the whole prefix; gcc-runtime
 # installs in /pos (its meta).
 prefix /apps/pos-sdk/<version>
+# pos-reference: the pos reference toolchain builds build on, a build ID
+# or pos/<release>. Its glibc is the oldest the sdk runs on: move it only
+# to raise that, or to a reference of the same glibc (the engine's
+# BUILD.md "Reference builds").
+pos-reference 202610311413
 # engine: the pos commit whose buildsys/ ./build runs.
-engine fedca2a5d2c942adc940c768adf5e4293331e545
+engine b816ca48bd9202ea8c2b2cbe94df920f4b9b785e
