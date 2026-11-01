@@ -37,8 +37,13 @@ EOF2
 
   # The compiler's own programs (cc1, cc1plus, lto1, collect2) run under the
   # POS loader like everything else in /pos, so the ambient /pos link flags
-  # from _pkg_setup stay on. The target libraries are built by the new xgcc
-  # with the patched defaults.
+  # from _pkg_setup stay on, but for pos-link's -L/pos/lib: the in-tree gmp,
+  # mpfr, mpc and zlib are linked as -L<dir> -l<name> after LDFLAGS, and
+  # /pos has its own gmp, mpfr and zlib (base stage, the build tools'
+  # run-time closure). The compiler searches /pos/lib after every -L by
+  # itself. The target libraries are built by the new xgcc with the
+  # patched defaults.
+  LDFLAGS=${LDFLAGS/-L\/pos\/lib /}
   #
   # What the compiler runs on is glibc only: gmp, mpfr and mpc from the tree,
   # gcc's bundled zlib, no zstd (LTO streams are zlib-compressed), and

@@ -13,6 +13,11 @@ pkg() {
   # libopcodes, libctf and libsframe are linked in statically. ar and
   # ranlib write archive members with zero dates and owners and mode 0644
   # (their D option): two builds of a package then give the same archives.
+  # The bundled zlib is linked as -L../zlib -lz, after LDFLAGS: without
+  # pos-link's -L/pos/lib, which would find pos' libz.so wherever /pos has
+  # it (the build tools' run-time closure). The compiler searches /pos/lib
+  # after every -L by itself.
+  LDFLAGS=${LDFLAGS/-L\/pos\/lib /}
   pkg_configure "${src_dir}/configure" \
     --prefix="$prefix" \
     --libdir="${prefix}/lib" \
