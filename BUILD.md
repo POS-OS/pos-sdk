@@ -1,6 +1,7 @@
 # Building
 pos-sdk builds the POS toolchain: binutils, gcc with gmp, mpfr and
-mpc in its tree, and Go, from their upstream release archives, installed in
+mpc in its tree, Go, and LLVM with clang, from their upstream release
+archives, installed in
 `/apps/pos-sdk/<version>` (`prefix` in `project`; `<version>` is
 `<product version>.<revision>` of `VERSION`, 1.0.0): the sdk is the
 whole prefix, its own `bin`, `lib`, `libexec`, `include` and `share`.
@@ -90,3 +91,30 @@ using cgo compile with the sdk's gcc. Go is patched for POS:
 The CA bundle needs no patch: POS links
 `/etc/ssl/certs/ca-certificates.crt`, the first file `crypto/x509` reads.
 The tests' data (`testdata` directories, `test/`) is not installed.
+
+## LLVM and clang
+llvm is LLVM with clang and clang-tools-extra (clangd, clang-tidy,
+clang-format), for the X86, AArch64, ARM, RISCV, WebAssembly and BPF
+targets: the LLVM rustc builds against (`llvm-config`, shared mode),
+libclang for bindgen, and the C and C++ editor tools. gcc stays the
+compiler POS is built with. LLVM is one shared libLLVM and clang one
+libclang-cpp, which the tools link; the static component libraries LLVM
+installs as well are dropped, with their targets in the cmake exports'
+per-configuration files, so `find_package(LLVM)` and `find_package(Clang)`
+work and a project links the shared libraries (`llvm_config(... USE_SHARED
+...)`, `clang-cpp`). A program linking them is outside `/pos` and needs
+its own runpath to `<sdk>/lib`, as the loader searches `/pos/lib` only.
+zlib, zstd and the C++ run-time are pos'. Debug info is `-g1`.
+
+clang compiles for POS as gcc does:
+
+* Programs get POS' loader, `/pos/lib/ld-linux-x86-64.so.2`
+  (`patches/0001-pos-driver.patch`), and the system headers are
+  `/pos/include` (`C_INCLUDE_DIRS`), without `/usr/local/include`.
+* `<sdk>/bin/x86_64-pc-linux-gnu.cfg`, clang's default configuration,
+  names the sdk's gcc installation (`--gcc-toolchain`: libstdc++, libgcc,
+  the crt files), which clang would otherwise choose among those it finds,
+  Fedora's in a build container, and adds `/pos/lib` (glibc's crt files and
+  libraries) and `<sdk>/lib` (gcc's link names) to the search, as clang
+  looks in `lib64` directories.
+

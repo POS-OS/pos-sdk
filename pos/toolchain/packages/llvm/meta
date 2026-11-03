@@ -1,0 +1,10 @@
+# LLVM with clang and clang-tools-extra (clangd, clang-tidy): the LLVM
+# rustc builds against, libclang for bindgen (-sys crates), and the C and
+# C++ editor tools. gcc stays the sdk's compiler; clang compiles for POS
+# as it does (build.sh, patches). One shared libLLVM and libclang-cpp,
+# which the tools link; no static libraries. zlib and zstd (compressed debug sections, LTO) and the C++
+# runtime (gcc-runtime) are pos'.
+build-requires gcc pos-link cmake ninja python3
+requires glibc gcc-runtime zlib zstd gcc
+archive https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.4/llvm-project-23.1.4.src.tar.xz 819ecf7351f1a66f76b2d701d8942faaf5faeb324cb90c9d5b090de142434bb2
+version 23.1.4

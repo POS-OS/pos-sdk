@@ -1,0 +1,27 @@
+POS: clang compiles for POS as the sdk's gcc does. Programs get /pos/lib's loader
+(/lib64/... otherwise), and there is no /usr/local/include: the local prefix
+is /pos, whose include directory C_INCLUDE_DIRS names (build.sh).
+
+diff --git a/clang/lib/Driver/ToolChains/Linux.cpp b/clang/lib/Driver/ToolChains/Linux.cpp
+index 8d30a5e..2570b83 100644
+--- a/clang/lib/Driver/ToolChains/Linux.cpp
++++ b/clang/lib/Driver/ToolChains/Linux.cpp
+@@ -753,7 +753,8 @@ std::string Linux::getDynamicLinker(const ArgList &Args) const {
+       (Triple.getVendor() == llvm::Triple::UnknownVendor ||
+        Triple.getVendor() == llvm::Triple::PC))
+     return "/usr/" + Triple.str() + "/lib/" + Loader;
+-  return "/" + LibDir + "/" + Loader;
++  // POS: the loader is /pos/lib's, as the sdk's gcc gives its programs.
++  return "/pos/lib/" + Loader;
+ }
+ 
+ void Linux::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+@@ -795,7 +796,7 @@ void Linux::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+     addSystemInclude(DriverArgs, CC1Args, *Path);
+ 
+   // LOCAL_INCLUDE_DIR
+-  addSystemInclude(DriverArgs, CC1Args, concat(SysRoot, "/usr/local/include"));
++  // POS: no /usr/local/include; the local prefix is /pos (C_INCLUDE_DIRS).
+   // TOOL_INCLUDE_DIR
+   AddMultilibIncludeArgs(DriverArgs, CC1Args);
+ 
