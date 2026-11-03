@@ -1,6 +1,6 @@
 # Building
-pos-sdk builds the POS toolchain: binutils, and gcc with gmp, mpfr and
-mpc in its tree, from their upstream release archives, installed in
+pos-sdk builds the POS toolchain: binutils, gcc with gmp, mpfr and
+mpc in its tree, and Go, from their upstream release archives, installed in
 `/apps/pos-sdk/<version>` (`prefix` in `project`; `<version>` is
 `<product version>.<revision>` of `VERSION`, 1.0.0): the sdk is the
 whole prefix, its own `bin`, `lib`, `libexec`, `include` and `share`.
@@ -37,7 +37,8 @@ holds what differs from pos's.
   tree are sources of their own (`gcc-gmp`, `gcc-mpfr`, `mpc`).
 * `pos/build-env`: the host and profile packages, a copy of pos's: the
   Fedora compiler (`gcc-host`) a build without a toolchain reference
-  uses, the host tools, and `pos-link`.
+  uses, the host tools, and `pos-link`; Fedora's Go (`go-host`) for
+  a build whose toolchain reference has no go.
 
 ## References
 A toolchain build builds on the glibc and kernel headers of a pos
@@ -67,3 +68,25 @@ against the gcc-runtime of the pos it runs on: its linker names
 (`<sdk>/lib/libstdc++.so`, ...) point at the sonames in `/pos/lib`
 (`libstdc++.so.6`), not at one gcc's files, so an sdk works on every pos
 whose gcc-runtime has the symbols it needs: one of the same gcc or newer.
+
+## Go
+go is the Go toolchain, `<sdk>/lib/go` (its `GOROOT`: the compiler, the
+go command and the standard library's sources), with `go` and `gofmt`
+in `<sdk>/bin`; its `env.sh` puts them on a build's `PATH`. Go builds
+itself: go build-requires go, which is the toolchain reference's go, or
+Fedora's (`go-host`, which go obsoletes) without one (the engine's
+BUILD.md "Packages"). Go 1.27 needs Go 1.24.6 or newer to build it.
+The go command and the compiler run on nothing but the kernel; programs
+using cgo compile with the sdk's gcc. Go is patched for POS:
+
+* Programs Go links itself (no cgo, or `-linkmode=internal`) get POS'
+  loader, `/pos/lib/ld-linux-x86-64.so.2`, as their interpreter, as gcc
+  gives its programs.
+* The time package reads `/pos/share/zoneinfo` (tzdata) first.
+* `GOTOOLCHAIN=local` (`go.env`): the go command builds with itself and
+  never downloads another toolchain. The module proxy and checksum
+  database are upstream's.
+
+The CA bundle needs no patch: POS links
+`/etc/ssl/certs/ca-certificates.crt`, the first file `crypto/x509` reads.
+The tests' data (`testdata` directories, `test/`) is not installed.

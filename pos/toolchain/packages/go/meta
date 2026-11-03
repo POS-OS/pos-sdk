@@ -1,0 +1,10 @@
+# Go: the compiler, the go command and the standard library's sources, in
+# <sdk>/lib/go (GOROOT), from its release archive. Built by Go (make.bash
+# with GOROOT_BOOTSTRAP): the toolchain reference's, or Fedora's (go-host)
+# without one. cgo compiles with the sdk's gcc (pos-link); the go command
+# runs on glibc only.
+build-requires go pos-link
+requires glibc
+obsoletes go-host
+archive https://go.dev/dl/go1.27.3.src.tar.gz 6e7749035cf360f06b2575d162ea79df9fda8ef671889e5c375f8e50777f26bb
+version 1.27.3

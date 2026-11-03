@@ -1,0 +1,7 @@
+# Build profile: Fedora's Go standing in for go, the compiler that builds
+# go, in a toolchain build whose toolchain reference has none (BUILD.md
+# "Go"). go obsoletes it, so where a toolchain reference has go, the
+# reference's is used, as gcc-host for gcc.
+kind profile
+provides go
+host-requires golang
