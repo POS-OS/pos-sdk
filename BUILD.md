@@ -1,7 +1,7 @@
 # Building
 pos-sdk builds the POS toolchain: binutils, gcc with gmp, mpfr and
-mpc in its tree, Go, and LLVM with clang, from their upstream release
-archives, installed in
+mpc in its tree, Go, LLVM with clang, and Rust, from their upstream
+release archives, installed in
 `/apps/pos-sdk/<version>` (`prefix` in `project`; `<version>` is
 `<product version>.<revision>` of `VERSION`, 1.0.0): the sdk is the
 whole prefix, its own `bin`, `lib`, `libexec`, `include` and `share`.
@@ -38,8 +38,8 @@ holds what differs from pos's.
   tree are sources of their own (`gcc-gmp`, `gcc-mpfr`, `mpc`).
 * `pos/build-env`: the host and profile packages, a copy of pos's: the
   Fedora compiler (`gcc-host`) a build without a toolchain reference
-  uses, the host tools, and `pos-link`; Fedora's Go (`go-host`) for
-  a build whose toolchain reference has no go.
+  uses, the host tools, and `pos-link`; Fedora's Go (`go-host`) and
+  Rust (`rust-host`) for a build whose toolchain reference has none.
 
 ## References
 A toolchain build builds on the glibc and kernel headers of a pos
@@ -117,4 +117,25 @@ clang compiles for POS as gcc does:
   Fedora's in a build container, and adds `/pos/lib` (glibc's crt files and
   libraries) and `<sdk>/lib` (gcc's link names) to the search, as clang
   looks in `lib64` directories.
+
+## Rust
+rust is rustc, cargo, clippy, rustdoc, rustfmt, rust-analyzer (with its
+proc-macro server in `libexec`) and the standard library's sources
+(rust-src), from the source release, whose crates are vendored: the
+build is offline. It is built with x.py, the release's dist build, by
+Rust: the toolchain reference's rust, or Fedora's (`rust-host`, which
+rust obsoletes) without one. stage0 has to be the release being built or
+the one before; one of the same release is a local rebuild, which the
+recipe chooses by the version. rustc links the sdk's LLVM (llvm-config,
+shared mode), which is why rust and llvm move together: a Rust release
+supports the LLVM majors from its minimum to the one it bundles.
+
+rustc links programs with `gcc` from `PATH`, the sdk's, which gives them
+POS' loader. The engine gives the sdk's programs their runpath
+(`$ORIGIN/../lib`), not rustc's rpath; the compilers x.py builds and
+runs get the sdk's lib through `LD_LIBRARY_PATH`. cargo links pos'
+libcurl, OpenSSL and zlib. No jemalloc, and no lld or LLVM tools of
+rust's own. Debug info is level 1. cargo's bash completion is in
+`share/bash-completion/completions`; nothing is installed in the
+prefix's `etc`.
 

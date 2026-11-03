@@ -1,0 +1,12 @@
+# Rust: rustc, cargo, clippy, rustdoc, rustfmt, rust-analyzer and the
+# standard library's sources (rust-src), from the source release, which
+# has its crates vendored. rustc links the sdk's LLVM (llvm-config,
+# shared) and runs the sdk's gcc as its linker. Built by Rust (stage0):
+# the toolchain reference's, or Fedora's (rust-host) without one. cargo
+# links pos' libcurl and OpenSSL (HTTP, registries, git over https).
+build-requires rust pos-link llvm python3
+requires glibc gcc-runtime gcc llvm openssl curl zlib
+provides cargo
+obsoletes rust-host
+archive https://static.rust-lang.org/dist/rustc-1.99.1-src.tar.xz 6451598a99e77f07571960f6b21d577399d3a30f33e80cbd2e3a4aae6535d265
+version 1.99.1

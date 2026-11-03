@@ -1,0 +1,7 @@
+# Build profile: Fedora's Rust standing in for rust, the compiler that
+# builds rust, in a toolchain build whose toolchain reference has none
+# (BUILD.md "Rust"). rust obsoletes it, as go go-host. Its stage0 must be
+# the release being built or the one before.
+kind profile
+provides rust cargo
+host-requires rust cargo
