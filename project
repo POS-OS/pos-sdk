@@ -15,4 +15,4 @@ prefix /apps/pos-sdk/<version>
 # BUILD.md "Reference builds").
 pos-reference 202610311413
 # engine: the pos commit whose buildsys/ ./build runs.
-engine d06676e70ca736164572d36494d0567cb39fd1aa
+engine 1b419b961300a846cd10c9a0f885631d0f5d0e3d
