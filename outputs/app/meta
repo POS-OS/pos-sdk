@@ -1,0 +1,4 @@
+# The sdk as an app archive, pos-sdk-app-<stem>.tar.zst, which pos-app
+# installs in /apps/pos-sdk/<version> (the engine's BUILD.md "App
+# archives"). It requires nothing: it is made from the whole build.
+host-requires tar zstd

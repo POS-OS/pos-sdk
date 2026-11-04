@@ -62,6 +62,15 @@ the recipes and engine archives and the source archives of a build made
 with `--source-archives`. The package records carry each package's
 version (`version` beside `archive` in the meta).
 
+The output `app` makes the sdk an app archive, `pos-sdk-app-<stem>.tar.zst`
+and its manifest `pos-sdk-app-<stem>.app` (the engine's BUILD.md "App
+archives"), which a release holds too: the tree of
+`/apps/pos-sdk/<version>`, without gcc-runtime, which pos ships. On a
+machine, `pos-app install` installs it, puts its `bin` on `PATH` and
+refuses a pos whose gcc-runtime is older than the sdk's gcc (see
+"Run-time coupling"). Two builds of one version have one prefix: a
+machine has one of them installed at a time.
+
 ## Run-time coupling
 gcc builds both the compiler and gcc-runtime (libstdc++, libgcc_s and the
 other run-time libraries), which pos ships in `/pos/lib`. The sdk links
